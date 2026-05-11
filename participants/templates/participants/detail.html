@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg">
+    <div class="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
+        <div>
+            <h2 class="text-lg font-medium text-gray-900">Detalle del Participante</h2>
+            <p class="mt-1 text-sm text-gray-500">Información completa del participante</p>
+        </div>
+        <div class="space-x-2">
+            <a href="{% url 'participants:update' participant.id %}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                Editar
+            </a>
+            <a href="{% url 'participants:delete' participant.id %}" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+                Eliminar
+            </a>
+        </div>
+    </div>
+    
+    <div class="p-6">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Información Personal</h3>
+                <div class="mt-2 space-y-3">
+                    <p><span class="font-medium">Nombres:</span> {{ participant.names }}</p>
+                    <p><span class="font-medium">Apellidos:</span> {{ participant.father_lastname }} {{ participant.mother_lastname }}</p>
+                    <p><span class="font-medium">DNI:</span> {{ participant.dni_number }}</p>
+                    <p><span class="font-medium">ORCID:</span> {{ participant.orcid_number|default:"-" }}</p>
+                    <p><span class="font-medium">Fecha de Nacimiento:</span> {{ participant.birth_date|date:"d/m/Y" }}</p>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Información de Contacto</h3>
+                <div class="mt-2 space-y-3">
+                    <p><span class="font-medium">Email:</span> {{ participant.email }}</p>
+                    <p><span class="font-medium">Celular:</span> {{ participant.phone }}</p>
+                    <p><span class="font-medium">Dirección:</span> {{ participant.address }}</p>
+                    <p><span class="font-medium">Ubicación:</span> {{ participant.district }}, {{ participant.province }}, {{ participant.department }}, {{ participant.country }}</p>
+                </div>
+            </div>
+        </div>
+        
+        {% if participant.dni_document %}
+        <div class="mt-6">
+            <h3 class="text-sm font-medium text-gray-500">Documento DNI</h3>
+            <a href="{{ participant.dni_document.url }}" target="_blank" class="mt-2 inline-flex items-center text-blue-600 hover:text-blue-800">
+                <svg class="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m-6 0a9 9 0 1118 0 9 9 0 01-18 0z"></path>
+                </svg>
+                Ver Documento
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

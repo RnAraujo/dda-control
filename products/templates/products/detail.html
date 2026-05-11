@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg">
+    <div class="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
+        <div>
+            <h2 class="text-lg font-medium text-gray-900">Detalle del Producto</h2>
+            <p class="mt-1 text-sm text-gray-500">{{ product.name }}</p>
+        </div>
+        <div class="space-x-2">
+            <a href="{% url 'products:update' product.id %}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                Editar
+            </a>
+            <a href="{% url 'products:delete' product.id %}" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+                Eliminar
+            </a>
+        </div>
+    </div>
+    
+    <div class="p-6">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <p><span class="font-medium">Nombre:</span> {{ product.name }}</p>
+                <p><span class="font-medium">Versión:</span> {{ product.version }}</p>
+                <p><span class="font-medium">Categoría:</span> {{ product.category.name }}</p>
+                <p><span class="font-medium">Estado:</span> 
+                    <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full
+                        {% if product.status == 'APPROVED' %}bg-green-100 text-green-800
+                        {% elif product.status == 'REGISTERED' %}bg-blue-100 text-blue-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ product.get_status_display }}
+                    </span>
+                </p>
+            </div>
+            <div>
+                <p><span class="font-medium">Fecha Creación:</span> {{ product.created_date|date:"d/m/Y H:i" }}</p>
+                <p><span class="font-medium">Última Actualización:</span> {{ product.updated_date|date:"d/m/Y H:i" }}</p>
+                <p><span class="font-medium">Creado por:</span> {{ product.created_by.full_name }}</p>
+            </div>
+        </div>
+        
+        <div class="mt-6">
+            <h3 class="text-md font-medium text-gray-900">Descripción</h3>
+            <p class="mt-2 text-gray-700">{{ product.description }}</p>
+        </div>
+        
+        <div class="mt-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-md font-medium text-gray-900">Historial de Cambios</h3>
+                <a href="{% url 'products:create_history' product.id %}" class="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700">
+                    + Agregar Historial
+                </a>
+            </div>
+            
+            <div class="space-y-3">
+                {% for history in history %}
+                <div class="border-l-4 border-blue-500 pl-4 py-2">
+                    <p class="text-sm">
+                        <span class="font-medium">{{ history.change_date|date:"d/m/Y H:i" }}</span> - 
+                        Estado: {{ history.get_previous_status_display }} → {{ history.get_new_status_display }}
+                    </p>
+                    {% if history.observations %}
+                    <p class="text-sm text-gray-600 mt-1">{{ history.observations }}</p>
+                    {% endif %}
+                    {% if history.resolution %}
+                    <a href="{{ history.resolution.url }}" class="text-blue-600 text-sm hover:underline">Ver Resolución</a>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p class="text-gray-500">No hay historial registrado</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="mt-6">
+            <h3 class="text-md font-medium text-gray-900 mb-4">Registros Asociados</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Participante</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Fecha</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reg in registrations %}
+                        <tr>
+                            <td class="px-4 py-2 text-sm">{{ reg.participant.full_name }}</td>
+                            <td class="px-4 py-2 text-sm">{{ reg.registration_date|date:"d/m/Y" }}</td>
+                            <td class="px-4 py-2 text-sm">{{ reg.get_status_display }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="px-4 py-2 text-center text-gray-500">No hay registros</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

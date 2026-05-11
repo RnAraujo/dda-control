@@ -4,6 +4,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from django.urls import reverse_lazy
 from django.db.models import Q
 from .models import ProductRegistration
+from products.models import Product
 from payments.models import RegistrationPayment, PaymentPlan, PaymentInstallment
 from .forms import ProductRegistrationForm, RegistrationStatusForm
 from datetime import datetime, timedelta

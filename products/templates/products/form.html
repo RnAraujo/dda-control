@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg max-w-3xl mx-auto">
+    <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+        <h2 class="text-lg font-medium text-gray-900">
+            {% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Producto
+        </h2>
+    </div>
+    
+    <form method="POST" class="p-6">
+        {% csrf_token %}
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Nombre del Producto</label>
+                {{ form.name }}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Versión</label>
+                {{ form.version }}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Categoría</label>
+                {{ form.category }}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Descripción</label>
+                {{ form.description }}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Estado</label>
+                {{ form.status }}
+            </div>
+        </div>
+        
+        <div class="mt-6 flex justify-end space-x-3">
+            <a href="{% url 'products:list' %}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
+                Cancelar
+            </a>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                Guardar
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
