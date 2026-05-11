@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center">
+    <div class="bg-white shadow rounded-lg p-8 max-w-md w-full">
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Acceso Restringido</h2>
+            <p class="text-gray-600 mt-2">
+                {% if config.visibility_mode == 'PRIVATE' %}
+                Esta sección es privada. Por favor, inicia sesión para continuar.
+                {% else %}
+                Esta sección está protegida. Ingresa el código de acceso.
+                {% endif %}
+            </p>
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            {% if config.visibility_mode == 'PROTECTED' %}
+            <div class="mb-4">
+                <label for="access_code" class="block text-sm font-medium text-gray-700">
+                    Código de Acceso
+                </label>
+                <input type="password" name="access_code" id="access_code" required
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            {% endif %}
+            
+            <button type="submit" 
+                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                {% if config.visibility_mode == 'PRIVATE' %}Acceder{% else %}Verificar Acceso{% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
