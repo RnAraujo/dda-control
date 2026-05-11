@@ -1,0 +1,27 @@
+venv/
+media/
+staticfiles/
+
+.vscode/
+*.code-workspace
+
+node_modules/
+
+# Sistema Operativo
+.DS_Store
+Thumbs.db
+
+# Migrations
+participants/migrations/__pycache__/
+products/migrations/__pycache__/
+registrations/migrations/__pycache__/
+payments/migrations/__pycache__/
+general/migrations/__pycache__/
+
+# Cache
+participants/__pycache__/
+products/__pycache__/
+registrations/__pycache__/
+payments/__pycache__/
+general/__pycache__/
+mysite/__pycache__/>
