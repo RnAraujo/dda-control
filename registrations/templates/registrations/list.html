@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg">
+    <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+        <div>
+            <h2 class="text-lg font-medium text-gray-900">Registros de Productos</h2>
+            <p class="mt-1 text-sm text-gray-500">Gestión de registros de derecho de autor</p>
+        </div>
+        <a href="{% url 'registrations:create' %}" 
+           class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+            Nuevo Registro
+        </a>
+    </div>
+    
+    <div class="border-t border-gray-200 px-4 py-4 sm:px-6">
+        <div class="mb-4 flex gap-4">
+            <select name="status" class="rounded-md border-gray-300 shadow-sm" onchange="window.location.href='?status='+this.value">
+                <option value="">Todos los estados</option>
+                {% for status_code, status_name in status_choices %}
+                <option value="{{ status_code }}" {% if request.GET.status == status_code %}selected{% endif %}>
+                    {{ status_name }}
+                </option>
+                {% endfor %}
+            </select>
+            
+            <select name="product" class="rounded-md border-gray-300 shadow-sm" onchange="window.location.href='?product='+this.value">
+                <option value="">Todos los productos</option>
+                {% for product in products %}
+                <option value="{{ product.id }}" {% if request.GET.product == product.id|stringformat:"s" %}selected{% endif %}>
+                    {{ product.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Producto</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Participante</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Exonerado</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for registration in registrations %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ registration.product.name }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ registration.participant.full_name }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ registration.registration_date|date:"d/m/Y" }}</td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full
+                                {% if registration.status == 'REGISTERED' %}bg-green-100 text-green-800
+                                {% elif registration.status == 'PENDING' %}bg-yellow-100 text-yellow-800
+                                {% elif registration.status == 'OBSERVED' %}bg-red-100 text-red-800
+                                {% elif registration.status == 'COMPLETED' %}bg-blue-100 text-blue-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ registration.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            {% if registration.is_payment_exempt %}Sí{% else %}No{% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right text-sm">
+                            <a href="{% url 'registrations:detail' registration.id %}" class="text-blue-600 hover:text-blue-900 mr-3">Ver</a>
+                            <a href="{% url 'registrations:update' registration.id %}" class="text-green-600 hover:text-green-900 mr-3">Editar</a>
+                            <a href="{% url 'registrations:delete' registration.id %}" class="text-red-600 hover:text-red-900">Eliminar</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">No hay registros</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if is_paginated %}
+        <div class="mt-4 flex justify-center">
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    Anterior
+                </a>
+                {% endif %}
+                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    Siguiente
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
