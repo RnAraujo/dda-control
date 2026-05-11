@@ -16,7 +16,8 @@ urlpatterns = [
     path('', lambda request: redirect('dashboard' if request.user.is_authenticated else 'accounts:login')),
     
     # Accounts / Authentication URLs
-    path('accounts/', include('apps.accounts.urls')),
+    path('accounts/', include('accounts.urls')),
+
     # Alternative direct URLs for accounts
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
@@ -24,11 +25,11 @@ urlpatterns = [
     path('dashboard/', dashboard_view, name='dashboard'),
     
     # App URLs
-    path('participants/', include('apps.participants.urls')),
-    path('products/', include('apps.products.urls')),
-    path('registrations/', include('apps.registrations.urls')),
-    path('payments/', include('apps.payments.urls')),
-    path('public/', include('apps.public_views.urls')),
+    path('participants/', include('participants.urls')),
+    path('products/', include('products.urls')),
+    path('registrations/', include('registrations.urls')),
+    path('payments/', include('payments.urls')),
+    path('public/', include('general.urls')),
 ]
 
 # Serve media files during development
@@ -42,5 +43,5 @@ if settings.DEBUG:
     #     urlpatterns = [path('__debug__/', include(debug_toolbar.urls))] + urlpatterns
 
 # Custom error handlers (optional)
-handler404 = 'apps.core.views.handler404'
-handler500 = 'apps.core.views.handler500'
+handler404 = 'core.views.handler404'
+handler500 = 'core.views.handler500'

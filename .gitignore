@@ -18,6 +18,7 @@ registrations/migrations/__pycache__/
 payments/migrations/__pycache__/
 general/migrations/__pycache__/
 accounts/migrations/__pycache__/
+core/migrations/__pycache__/
 
 # Cache
 participants/__pycache__/
@@ -26,5 +27,6 @@ registrations/__pycache__/
 payments/__pycache__/
 general/__pycache__/
 accounts/__pycache__/
+core/__pycache__/
 
-mysite/__pycache__/>
+mysite/__pycache__/
