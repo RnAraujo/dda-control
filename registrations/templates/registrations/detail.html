@@ -1,0 +1,38 @@
+<!-- Agregar después de la información básica del registro -->
+{% if not registration.is_payment_exempt %}
+<div class="mt-6">
+    <h3 class="text-md font-medium text-gray-900 mb-3">Información de Pago</h3>
+    {% for payment in registration.payments.all %}
+    <div class="bg-gray-50 rounded-lg p-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+                <p class="text-xs text-gray-500">Monto Total</p>
+                <p class="font-semibold">S/ {{ payment.total_amount }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500">Pagado</p>
+                <p class="font-semibold text-green-600">S/ {{ payment.paid_amount }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500">Saldo</p>
+                <p class="font-semibold text-red-600">S/ {{ payment.pending_balance }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500">Estado</p>
+                <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full
+                    {% if payment.status == 'PAID' %}bg-green-100 text-green-800
+                    {% elif payment.status == 'PENDING' %}bg-yellow-100 text-yellow-800
+                    {% else %}bg-red-100 text-red-800{% endif %}">
+                    {{ payment.get_status_display }}
+                </span>
+            </div>
+        </div>
+        <div class="mt-3">
+            <a href="{% url 'payments:detail' payment.id %}" class="text-blue-600 hover:text-blue-800 text-sm">
+                Ver detalle de pagos →
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

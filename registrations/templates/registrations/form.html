@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg">
+    <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+        <h2 class="text-lg font-medium text-gray-900">
+            {% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Registro de Producto
+        </h2>
+        <p class="mt-1 text-sm text-gray-500">
+            Registra un participante en un producto de software para el derecho de autor
+        </p>
+    </div>
+    
+    <form method="POST" class="p-6" id="registrationForm">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 gap-6">
+            <!-- Producto -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Producto *</label>
+                {{ form.product }}
+                {% if form.product.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.product.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Selecciona el producto de software a registrar</p>
+            </div>
+            
+            <!-- Participante -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Participante *</label>
+                {{ form.participant }}
+                {% if form.participant.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.participant.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Selecciona el participante que registra el producto</p>
+            </div>
+            
+            <!-- Estado -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Estado</label>
+                {{ form.status }}
+                {% if form.status.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.status.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Exoneración de Pago -->
+            <div class="border-t pt-4">
+                <div class="flex items-center">
+                    {{ form.is_payment_exempt }}
+                    <label class="ml-2 block text-sm font-medium text-gray-900">
+                        Exonerado de Pago
+                    </label>
+                </div>
+                <p class="mt-1 text-sm text-gray-500 ml-6">
+                    Marcar esta opción si el participante está exento de pagar derechos de autor
+                </p>
+            </div>
+            
+            <!-- Motivo de Exoneración (oculto por defecto) -->
+            <div id="exemptionReasonDiv" style="display: none;">
+                <label class="block text-sm font-medium text-gray-700">Motivo de Exoneración</label>
+                {{ form.exemption_reason }}
+                {% if form.exemption_reason.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.exemption_reason.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Ej: "Beneficiario de ley N° XXXX", "Institución educativa", etc.</p>
+            </div>
+            
+            <!-- Plan de Pago (solo si no está exonerado) -->
+            <div id="paymentPlanDiv">
+                <label class="block text-sm font-medium text-gray-700">Plan de Pago</label>
+                <select name="payment_plan" id="payment_plan" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">Seleccione un plan de pago...</option>
+                    {% for plan in payment_plans %}
+                    <option value="{{ plan.id }}" data-installments="{{ plan.installments_number }}" data-interest="{{ plan.interest_rate }}">
+                        {{ plan.name }} - {{ plan.installments_number }} cuotas {% if plan.interest_rate > 0 %}({{ plan.interest_rate }}% interés){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                <p class="mt-1 text-sm text-gray-500">Selecciona cómo se realizarán los pagos</p>
+            </div>
+            
+            <!-- Información de Pago (dinámica) -->
+            <div id="paymentInfo" class="hidden bg-blue-50 rounded-lg p-4">
+                <h4 class="text-sm font-medium text-blue-900 mb-2">Resumen de Pago</h4>
+                <div id="paymentDetails"></div>
+            </div>
+            
+            <!-- Observaciones -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Observaciones</label>
+                {{ form.observations }}
+                {% if form.observations.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.observations.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="mt-6 flex justify-end space-x-3">
+            <a href="{% url 'registrations:list' %}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
+                Cancelar
+            </a>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                {% if form.instance.pk %}Actualizar{% else %}Registrar{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Mostrar/ocultar campo de motivo de exoneración
+    const exemptCheckbox = document.getElementById('id_is_payment_exempt');
+    const exemptionDiv = document.getElementById('exemptionReasonDiv');
+    const paymentPlanDiv = document.getElementById('paymentPlanDiv');
+    const paymentInfo = document.getElementById('paymentInfo');
+    
+    function toggleExemptionFields() {
+        if (exemptCheckbox.checked) {
+            exemptionDiv.style.display = 'block';
+            paymentPlanDiv.style.display = 'none';
+            paymentInfo.classList.add('hidden');
+        } else {
+            exemptionDiv.style.display = 'none';
+            paymentPlanDiv.style.display = 'block';
+        }
+    }
+    
+    if (exemptCheckbox) {
+        exemptCheckbox.addEventListener('change', toggleExemptionFields);
+        toggleExemptionFields();
+    }
+    
+    // Calcular información de pago al seleccionar plan
+    const paymentPlanSelect = document.getElementById('payment_plan');
+    const paymentDetailsDiv = document.getElementById('paymentDetails');
+    const montoBase = 500; // Monto base del registro
+    
+    function calculatePaymentInfo() {
+        const selectedOption = paymentPlanSelect.options[paymentPlanSelect.selectedIndex];
+        
+        if (!paymentPlanSelect.value || !selectedOption) {
+            paymentInfo.classList.add('hidden');
+            return;
+        }
+        
+        const installmentCount = parseInt(selectedOption.dataset.installments) || 1;
+        const interestRate = parseFloat(selectedOption.dataset.interest) || 0;
+        
+        // Calcular monto total con interés
+        const totalAmount = montoBase * (1 + (interestRate / 100));
+        const installmentAmount = totalAmount / installmentCount;
+        
+        paymentDetailsDiv.innerHTML = `
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-blue-800">Monto base:</span>
+                    <span class="font-medium">S/ ${montoBase.toFixed(2)}</span>
+                </div>
+                ${interestRate > 0 ? `
+                <div class="flex justify-between">
+                    <span class="text-blue-800">Interés (${interestRate}%):</span>
+                    <span class="font-medium">S/ ${((totalAmount - montoBase)).toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between border-t pt-2 mt-2">
+                    <span class="font-semibold text-blue-900">Monto total:</span>
+                    <span class="font-semibold text-blue-900">S/ ${totalAmount.toFixed(2)}</span>
+                </div>
+                ` : `
+                <div class="flex justify-between border-t pt-2 mt-2">
+                    <span class="font-semibold text-blue-900">Monto total:</span>
+                    <span class="font-semibold text-blue-900">S/ ${totalAmount.toFixed(2)}</span>
+                </div>
+                `}
+                <div class="flex justify-between">
+                    <span class="text-blue-800">Número de cuotas:</span>
+                    <span class="font-medium">${installmentCount}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-blue-800">Monto por cuota:</span>
+                    <span class="font-medium">S/ ${installmentAmount.toFixed(2)}</span>
+                </div>
+                <div class="mt-3 p-2 bg-blue-100 rounded">
+                    <p class="text-xs text-blue-800">
+                        ⚠️ Las cuotas se generarán automáticamente con vencimientos mensuales.
+                        El primer pago vencerá en 30 días.
+                    </p>
+                </div>
+            </div>
+        `;
+        
+        paymentInfo.classList.remove('hidden');
+    }
+    
+    if (paymentPlanSelect) {
+        paymentPlanSelect.addEventListener('change', calculatePaymentInfo);
+        // Calcular si ya hay un valor seleccionado (en modo edición)
+        if (paymentPlanSelect.value) {
+            calculatePaymentInfo();
+        }
+    }
+    
+    // Validar que si no está exonerado, se seleccione un plan de pago
+    const form = document.getElementById('registrationForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!exemptCheckbox.checked && !paymentPlanSelect.value) {
+                e.preventDefault();
+                alert('Por favor, seleccione un plan de pago o marque la opción "Exonerado de Pago"');
+                paymentPlanSelect.focus();
+            }
+        });
+    }
+    
+    // Mejorar visualización de selects con select2 o similar (opcional)
+    // Mostrar información del participante seleccionado
+    const participantSelect = document.getElementById('id_participant');
+    if (participantSelect) {
+        participantSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                // Podrías agregar AJAX para mostrar más información del participante
+                console.log('Participante seleccionado:', selectedOption.text);
+            }
+        });
+    }
+    
+    // Mostrar información del producto seleccionado
+    const productSelect = document.getElementById('id_product');
+    if (productSelect) {
+        productSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                // Podrías agregar AJAX para mostrar más información del producto
+                console.log('Producto seleccionado:', selectedOption.text);
+            }
+        });
+    }
+</script>
+
+<style>
+    /* Estilos adicionales para mejorar la apariencia */
+    select, input, textarea {
+        transition: all 0.2s ease;
+    }
+    
+    select:focus, input:focus, textarea:focus {
+        outline: none;
+        ring: 2px solid #3b82f6;
+        border-color: #3b82f6;
+    }
+    
+    /* Animación suave para elementos ocultos */
+    #exemptionReasonDiv, #paymentPlanDiv, #paymentInfo {
+        transition: opacity 0.3s ease;
+    }
+</style>
+{% endblock %}

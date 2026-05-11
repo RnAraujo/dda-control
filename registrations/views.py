@@ -49,15 +49,27 @@ class ProductRegistrationCreateView(CreateView):
     form_class = ProductRegistrationForm
     template_name = 'registrations/form.html'
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Pasar planes de pago activos al template
+        context['payment_plans'] = PaymentPlan.objects.filter(is_active=True)
+        return context
+    
     def form_valid(self, form):
         registration = form.save()
         
         # If not exempt, create payment
         if not registration.is_payment_exempt:
             total_amount = self.calculate_amount(registration.product)
-            payment_plan = PaymentPlan.objects.filter(is_active=True).first()
+            payment_plan_id = self.request.POST.get('payment_plan')
             
-            if payment_plan:
+            if payment_plan_id:
+                payment_plan = PaymentPlan.objects.get(id=payment_plan_id)
+                
+                # Aplicar interés si existe
+                if payment_plan.interest_rate > 0:
+                    total_amount = total_amount * (1 + (payment_plan.interest_rate / 100))
+                
                 payment = RegistrationPayment.objects.create(
                     registration=registration,
                     total_amount=total_amount,
@@ -83,8 +95,10 @@ class ProductRegistrationCreateView(CreateView):
         return super().form_valid(form)
     
     def calculate_amount(self, product):
+        """Calcula el monto base según el producto"""
         base_amount = 500
-        if product.category.name.lower() == 'software empresarial':
+        # Puedes personalizar según categoría
+        if product.category and product.category.name.lower() == 'software empresarial':
             return base_amount * 1.5
         return base_amount
     
@@ -95,6 +109,11 @@ class ProductRegistrationUpdateView(UpdateView):
     model = ProductRegistration
     form_class = ProductRegistrationForm
     template_name = 'registrations/form.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['payment_plans'] = PaymentPlan.objects.filter(is_active=True)
+        return context
     
     def form_valid(self, form):
         messages.success(self.request, 'Registro actualizado exitosamente')
