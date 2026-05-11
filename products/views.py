@@ -124,3 +124,38 @@ class ProductCategoryCreateView(CreateView):
     def form_valid(self, form):
         messages.success(self.request, 'Categoría creada exitosamente')
         return super().form_valid(form)
+
+class ProductCategoryListView(ListView):
+    model = ProductCategory
+    template_name = 'products/category_list.html'
+    context_object_name = 'categories'
+    ordering = ['name']
+
+class ProductCategoryCreateView(CreateView):
+    model = ProductCategory
+    form_class = ProductCategoryForm
+    template_name = 'products/category_form.html'
+    success_url = reverse_lazy('products:category_list')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Categoría creada exitosamente')
+        return super().form_valid(form)
+
+class ProductCategoryUpdateView(UpdateView):
+    model = ProductCategory
+    form_class = ProductCategoryForm
+    template_name = 'products/category_form.html'
+    success_url = reverse_lazy('products:category_list')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Categoría actualizada exitosamente')
+        return super().form_valid(form)
+
+class ProductCategoryDeleteView(DeleteView):
+    model = ProductCategory
+    template_name = 'products/category_confirm_delete.html'
+    success_url = reverse_lazy('products:category_list')
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Categoría eliminada exitosamente')
+        return super().delete(request, *args, **kwargs)

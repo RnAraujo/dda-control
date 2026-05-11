@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg">
+    <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-lg font-medium text-gray-900">Historial de Pagos</h2>
+                <p class="mt-1 text-sm text-gray-500">Todos los pagos realizados en el sistema</p>
+            </div>
+            <div class="flex space-x-2">
+                <a href="{% url 'payments:plan_list' %}" class="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700">
+                    Planes de Pago
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="px-4 py-4 sm:px-6">
+        <div class="mb-4">
+            <form method="GET" class="flex gap-4">
+                <input type="text" name="participant" placeholder="Buscar por DNI del participante..." 
+                       class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       value="{{ request.GET.participant }}">
+                <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+                    Buscar
+                </button>
+            </form>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Participante</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto Total</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pagado</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Saldo</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Registro</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for payment in payments %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ payment.registration.product.name }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ payment.registration.participant.full_name }}
+                            <br>
+                            <span class="text-xs text-gray-400">DNI: {{ payment.registration.participant.dni_number }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            S/ {{ payment.total_amount }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600">
+                            S/ {{ payment.paid_amount }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm {% if payment.pending_balance > 0 %}text-red-600{% else %}text-gray-500{% endif %}">
+                            S/ {{ payment.pending_balance }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full
+                                {% if payment.status == 'PAID' %}bg-green-100 text-green-800
+                                {% elif payment.status == 'PENDING' %}bg-yellow-100 text-yellow-800
+                                {% elif payment.status == 'EXPIRED' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ payment.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ payment.registration.registration_date|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="{% url 'payments:detail' payment.id %}" class="text-blue-600 hover:text-blue-900">
+                                Ver Detalles
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                            No hay pagos registrados
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if is_paginated %}
+        <div class="mt-4 flex justify-between items-center">
+            <div>
+                <span class="text-sm text-gray-700">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+            </div>
+            <div>
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.participant %}&participant={{ request.GET.participant }}{% endif %}" 
+                   class="px-3 py-1 border rounded-md hover:bg-gray-50">
+                    Anterior
+                </a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.participant %}&participant={{ request.GET.participant }}{% endif %}" 
+                   class="px-3 py-1 border rounded-md ml-2 hover:bg-gray-50">
+                    Siguiente
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

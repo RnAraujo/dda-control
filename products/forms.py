@@ -1,16 +1,22 @@
 from django import forms
 from .models import Product, ProductCategory, ProductHistory
 
+
 class ProductCategoryForm(forms.ModelForm):
     class Meta:
         model = ProductCategory
         fields = ['name', 'description']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'}),
-            'description': forms.Textarea(attrs={'rows': 3, 'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'})
+            'name': forms.TextInput(attrs={
+                'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
+            }),
+            'description': forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
+            })
         }
         labels = {
-            'name': 'Nombre',
+            'name': 'Nombre de la Categoría',
             'description': 'Descripción'
         }
 

@@ -4,17 +4,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
 from django.contrib.auth import views as auth_views
+from core.views import home_redirect
 
 # Custom login view import (if you have custom login)
 from accounts.views import login_view, logout_view, register_view, dashboard_view
 
+
 urlpatterns = [
+    path('', home_redirect, name='home'),
+
     # Admin panel
     path('admin/', admin.site.urls),
-    
-    # Root URL - redirect to dashboard or login
-    path('', lambda request: redirect('dashboard' if request.user.is_authenticated else 'accounts:login')),
-    
+      
     # Accounts / Authentication URLs
     path('accounts/', include('accounts.urls')),
 

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg max-w-md mx-auto">
+    <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+        <h2 class="text-lg font-medium text-gray-900">
+            {% if form.instance.pk %}Editar{% else %}Nuevo{% endif %} Plan de Pago
+        </h2>
+        <p class="mt-1 text-sm text-gray-500">Configura los planes de pago en cuotas</p>
+    </div>
+    
+    <form method="POST" class="p-6">
+        {% csrf_token %}
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Nombre del Plan</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Ej: "Plan Básico", "Plan Premium"</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Número de Cuotas</label>
+                {{ form.installments_number }}
+                {% if form.installments_number.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.installments_number.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Ej: 1, 3, 6, 12 cuotas</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Tasa de Interés (%)</label>
+                {{ form.interest_rate }}
+                {% if form.interest_rate.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.interest_rate.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Porcentaje de interés por cuota (0 si no aplica)</p>
+            </div>
+            
+            <div class="flex items-center">
+                {{ form.is_active }}
+                <label class="ml-2 block text-sm text-gray-900">Plan Activo</label>
+                <p class="ml-4 text-sm text-gray-500">Los planes inactivos no estarán disponibles para nuevos registros</p>
+            </div>
+        </div>
+        
+        <div class="mt-6 flex justify-end space-x-3">
+            <a href="{% url 'payments:plan_list' %}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
+                Cancelar
+            </a>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                Guardar Plan
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
